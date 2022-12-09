@@ -6,5 +6,7 @@ from artscraper.philamuseum import PhiladelphiaMuseumScraper
 from artscraper.getty import GettyScraper
 from artscraper.rijksmuseum import RijksmuseumScraper
 from artscraper.artic import ArticScraper
+from artscraper.smithsonian import SmithsonianScraper
+from artscraper.met import MetMuseumScraper
 
-__all__ = ["GoogleArtScraper", "WikiArtScraper", "PhiladelphiaMuseumScraper", "GettyScraper", "RijksmuseumScraper", "ArticScraper"]
+__all__ = ["GoogleArtScraper", "WikiArtScraper", "PhiladelphiaMuseumScraper", "GettyScraper", "RijksmuseumScraper", "ArticScraper", "SmithsonianScraper", "MetMuseumScraper"]

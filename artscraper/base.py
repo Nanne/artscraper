@@ -8,7 +8,9 @@ import json
 from abc import ABC
 from abc import abstractmethod
 from pathlib import Path
-
+from artscraper.utils import random_wait_time
+import time
+from time import sleep
 
 class BaseArtScraper(ABC):
     """Base class for ArtScrapers.
@@ -30,6 +32,7 @@ class BaseArtScraper(ABC):
     def __init__(self, output_dir=None, skip_existing=True, min_wait=None):
         self.skip_existing = skip_existing
         self.output_dir = output_dir
+        self.last_request = time.time() - 100
 
         # Cache of metadata, in case it is needed more than once/later.
         self._meta_store = {"link": "", "data": {}}
@@ -41,6 +44,26 @@ class BaseArtScraper(ABC):
 
     def __exit__(self, _exc_type, _exc_val, _exc_tb):
         pass
+
+    def wait(self, min_wait, max_wait=None, update=True):
+        """Wait until we are allowed to perform our next action.
+
+        Parameters
+        ----------
+        min_wait: int or float
+            Minimum waiting time before performing the action.
+        max_wait: int or float, optional
+            Maximum waiting time before performing an action. By default
+            3 times the minimum waiting time.
+        update: bool, default=True
+            If true, reset the timer.
+        """
+        time_elapsed = time.time() - self.last_request
+        wait_time = random_wait_time(min_wait, max_wait) - time_elapsed
+        if wait_time > 0:
+            sleep(wait_time)
+        if update:
+            self.last_request = time.time()
 
     def load_link(self, link):
         """Load an url / webpage.

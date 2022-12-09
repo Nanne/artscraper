@@ -1,10 +1,7 @@
 """Module for GoogleArtScraper class."""
 
 import json
-import time
 from pathlib import Path
-from random import random
-from time import sleep
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
@@ -34,7 +31,6 @@ class GoogleArtScraper(BaseArtScraper):
                  geckodriver_path="geckodriver"):
         super().__init__(output_dir, skip_existing, min_wait=min_wait)
         self.driver = webdriver.Firefox(executable_path=geckodriver_path)
-        self.last_request = time.time() - 100
 
     def __exit__(self, _exc_type, _exc_val, _exc_tb):
         self.driver.close()
@@ -59,26 +55,6 @@ class GoogleArtScraper(BaseArtScraper):
     def paint_dir(self):
         paint_id = "_".join(urlparse(self.link).path.split("/")[-2:])
         return Path(self.output_dir, paint_id)
-
-    def wait(self, min_wait, max_wait=None, update=True):
-        """Wait until we are allowed to perform our next action.
-
-        Parameters
-        ----------
-        min_wait: int or float
-            Minimum waiting time before performing the action.
-        max_wait: int or float, optional
-            Maximum waiting time before performing an action. By default
-            3 times the minimum waiting time.
-        update: bool, default=True
-            If true, reset the timer.
-        """
-        time_elapsed = time.time() - self.last_request
-        wait_time = random_wait_time(min_wait, max_wait) - time_elapsed
-        if wait_time > 0:
-            sleep(wait_time)
-        if update:
-            self.last_request = time.time()
 
     def get_main_text(self):
         """Get the main text for the artwork.
@@ -160,42 +136,3 @@ class GoogleArtScraper(BaseArtScraper):
 
     def close(self):
         self.driver.close()
-
-
-def random_wait_time(min_wait=5, max_wait=None):
-    """Compute a random wait time.
-
-    This is a probability distribution with non-zero values between
-    min_wait and max_wait. The PDF decreases as a powerlaw (**-1.5) between
-    the two.
-
-    Parameters
-    ----------
-    min_wait: int or float, default=5
-        Minimum waiting time.
-    max_wait: int or float, optional
-        Maximum waiting time. If not supplied, use 3x
-        minimum waiting time.
-
-    Returns
-    -------
-    float:
-        Waiting time between `min_wait` and `max_wait` according to
-        the polynomial PDF.
-    """
-    #  pylint: disable=invalid-name
-    if max_wait is None:
-        max_wait = 3 * min_wait
-    alpha = 1.5
-    beta = alpha - 1
-    b = min_wait
-    c = max_wait
-    a = -beta / (c**-beta - b**-beta)
-
-    # def cdf(x):
-    #     return a / beta * (b**-beta - x**-beta)
-
-    def inv_cdf(x):
-        return (b**-beta - beta * x / a)**(-1 / beta)
-
-    return inv_cdf(random())

@@ -1,10 +1,7 @@
 """Module for ArticScraper class."""
 
 import json
-import time
 from pathlib import Path
-from random import random
-from time import sleep
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
@@ -12,7 +9,6 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 from artscraper.base import BaseArtScraper
-from artscraper.googleart import random_wait_time
 
 
 class ArticScraper(BaseArtScraper):
@@ -33,7 +29,6 @@ class ArticScraper(BaseArtScraper):
     def __init__(self, output_dir=None, skip_existing=True, min_wait=5, driver_options=None):
         super().__init__(output_dir, skip_existing, min_wait=min_wait)
         self.driver = webdriver.Firefox(options=driver_options)
-        self.last_request = time.time() - 100
 
     def __exit__(self, _exc_type, _exc_val, _exc_tb):
         self.driver.close()
@@ -58,26 +53,6 @@ class ArticScraper(BaseArtScraper):
     def paint_dir(self):
         paint_id = "_".join(urlparse(self.link).path.split("/")[-2:])
         return Path(self.output_dir, paint_id)
-
-    def wait(self, min_wait, max_wait=None, update=True):
-        """Wait until we are allowed to perform our next action.
-
-        Parameters
-        ----------
-        min_wait: int or float
-            Minimum waiting time before performing the action.
-        max_wait: int or float, optional
-            Maximum waiting time before performing an action. By default
-            3 times the minimum waiting time.
-        update: bool, default=True
-            If true, reset the timer.
-        """
-        time_elapsed = time.time() - self.last_request
-        wait_time = random_wait_time(min_wait, max_wait) - time_elapsed
-        if wait_time > 0:
-            sleep(wait_time)
-        if update:
-            self.last_request = time.time()
 
     def get_main_text(self):
         """Get the main text for the artwork.
